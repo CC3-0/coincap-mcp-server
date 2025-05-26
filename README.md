@@ -1,33 +1,30 @@
 # CoinCap MCP Server (clean)
 
-A minimal Model Context Protocol (MCP) server that exposes CoinCap.io endpoints as tools.
+A minimal Model Context Protocol (MCP) server that exposes CoinCap.io endpoints as tools via local stdio mcp.
 
 ## Prerequisites
 
 * Node.js ≥ 18
-* A CoinCap API key (grab one for free)
+* A CoinCap API key (grab one for free at https://pro.coincap.io)
 
-## Quick start
+## Quick start using Claude Desktop
 
-```bash
-git clone <repo> coincap-mcp && cd coincap-mcp
-cp .env.example .env          # paste your CoinCap API key
-npm install
-npm run build
-node dist/index.js
+1) yarn 
+2) yarn build
+3) point claude desktop config at built `dist/index.js` file
+4) start claude desktop
+
+## Known issues (Mac Os X)
+
+I had to point the "command" in my claude config to a specific version of node for it to work (node 18). For example:
+
 ```
-
-Server starts on **http://localhost:7007**
-
-## Test with cURL
-
-```bash
-# 1) initialize
-curl -s localhost:7007 -H 'Content-Type: application/json' \
--d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"client":{"name":"curl","version":"0.1"},"capabilities":{}}}'
-
-# 2) call get_assets
-curl -s localhost:7007 -H 'Content-Type: application/json' \
--d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"get_assets","arguments":{"search":"bitcoin","limit":1}}}' | jq .
+{
+  "mcpServers": {
+    "crypto-prices": {
+      "command": "/Users/seanluther/.nvm/versions/node/v18.12.1/bin/node",
+      "args": ["/Users/seanluther/Downloads/coincap-mcp-clean/dist/index.js"]
+    }
+  }
+}
 ```
-# coincap-mcp-v1
