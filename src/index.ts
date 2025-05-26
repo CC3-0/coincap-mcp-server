@@ -21,7 +21,7 @@ import {
   handleGetExchanges,
   handleGetExchange,
   handleGetMarkets
-} from './handlers/crypto-handlers.js';
+} from './crypto-handlers.js';
 
 class CryptocurrencyMCPServer {
   private server: Server;
