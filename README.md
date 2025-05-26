@@ -1,4 +1,4 @@
-# CoinCap MCP Server (clean)
+# CoinCap MCP Server
 
 A minimal Model Context Protocol (MCP) server that exposes CoinCap.io endpoints as tools via local stdio mcp.
 
