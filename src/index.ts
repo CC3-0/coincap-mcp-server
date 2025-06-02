@@ -14,9 +14,14 @@ import {
 } from './dynamicMcpTools.js';
 
 import fetch from 'node-fetch';
+import express, { Request, Response } from 'express';
+import cors from 'cors';
+import { createServer } from 'http';
 
 class DynamicMCPServer {
   private server: Server;
+  private listToolsHandler: any;
+  private callToolHandler: any;
 
   constructor() {
     this.server = new Server(
@@ -33,7 +38,7 @@ class DynamicMCPServer {
   async setup(): Promise<void> {
     await loadSwaggerEndpoints();
 
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => {
+    this.listToolsHandler = async () => {
       return {
         tools: Object.values(endpointMap).map((def) => {
           const properties: Record<string, any> = {};
@@ -56,9 +61,9 @@ class DynamicMCPServer {
           };
         }),
       };
-    });
+    };
 
-    this.server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
+    this.callToolHandler = async (request: CallToolRequest) => {
       const { name, arguments: args } = request.params as any
       const def = endpointMap[name];
 
@@ -103,14 +108,86 @@ class DynamicMCPServer {
           isError: true,
         };
       }
-    });
+    };
+
+    // Set up the handlers for stdio mode
+    this.server.setRequestHandler(ListToolsRequestSchema, this.listToolsHandler);
+    this.server.setRequestHandler(CallToolRequestSchema, this.callToolHandler);
   }
 
   async run(): Promise<void> {
     await this.setup();
-    const transport = new StdioServerTransport();
-    await this.server.connect(transport);
-    console.error(`🚀 MCP local server ready via stdio`);
+    
+    // Check for port argument
+    const portArg = process.argv.find(arg => arg.startsWith('--port='));
+    
+    if (portArg) {
+      // Remote mode
+      const port = parseInt(portArg.split('=')[1]);
+      await this.startRemoteServer(port);
+    } else {
+      // Default stdio mode for Claude Desktop
+      const transport = new StdioServerTransport();
+      await this.server.connect(transport);
+      console.error(`🚀 MCP local server ready via stdio`);
+    }
+  }
+
+  private async startRemoteServer(port: number): Promise<void> {
+    const app = express();
+    
+    // Enable CORS for cross-origin requests
+    app.use(cors());
+    app.use(express.json());
+
+    // Health check endpoint
+    app.get('/health', (req: Request, res: Response) => {
+      res.json({ status: 'ok', server: 'cryptocurrency-mcp-server', version: '0.2.0' });
+    });
+
+    // MCP JSON-RPC endpoint - handle requests directly without transport
+    app.post('/mcp', async (req: Request, res: Response) => {
+      try {
+        const request = req.body;
+        
+        if (request.method === 'tools/list') {
+          const response = await this.listToolsHandler();
+          res.json({
+            jsonrpc: '2.0',
+            id: request.id,
+            result: response
+          });
+        } else if (request.method === 'tools/call') {
+          const response = await this.callToolHandler({ 
+            method: 'tools/call', 
+            params: request.params 
+          });
+          res.json({
+            jsonrpc: '2.0',
+            id: request.id,
+            result: response
+          });
+        } else {
+          res.status(400).json({
+            jsonrpc: '2.0',
+            id: request.id,
+            error: { code: -32601, message: 'Method not found' }
+          });
+        }
+      } catch (error: any) {
+        res.status(500).json({
+          jsonrpc: '2.0',
+          id: req.body?.id,
+          error: { code: -32603, message: error.message }
+        });
+      }
+    });
+
+    app.listen(port, '0.0.0.0', () => {
+      console.error(`🚀 MCP remote server ready on port ${port}`);
+      console.error(`   Health check: http://localhost:${port}/health`);
+      console.error(`   MCP endpoint: http://localhost:${port}/mcp`);
+    });
   }
 }
 
