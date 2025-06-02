@@ -2,22 +2,13 @@
 
 A minimal Model Context Protocol (MCP) server that exposes CoinCap.io endpoints as tools. Can run in two modes:
 - **Local stdio mode** for Claude Desktop integration
-- **Remote HTTP mode** for chatbot/API integration
+- **Remote HTTP mode** for remote chatbot integration
 
 ## Prerequisites
 
 * Node.js ≥ 18
 * Yarn package manager
 * A CoinCap API key (grab one for free at https://pro.coincap.io)
-
-## Installation
-
-```bash
-yarn install
-yarn build
-```
-
-## Usage
 
 ### Option 1: Claude Desktop Integration (Local)
 
