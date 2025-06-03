@@ -1,25 +1,31 @@
-// dynamicMcpTools.ts
-
-import fetch from 'node-fetch';
+// ===== dynamicMcpTools.js (COMPLETE FILE) =====
+import axios from 'axios';
 
 export const SWAGGER_URL = 'https://rest.staging.wagmi.productions/api-docs.json';
 export const API_BASE = 'https://rest.staging.wagmi.productions';
-export const API_KEY = process.env.COINCAP_API_KEY || '';
+
+export type ParameterDetail = {
+  name: string;
+  type: string;
+  description: string;
+  required: boolean;
+  enum: string[] | null;
+  example: any;
+};
 
 export type EndpointDef = {
   toolName: string;
   description: string;
   path: string;
-  pathParams: string[];
-  queryParams: string[];
+  pathParams: ParameterDetail[];
+  queryParams: ParameterDetail[];
 };
 
 export const endpointMap: Record<string, EndpointDef> = {};
 
 export async function loadSwaggerEndpoints(): Promise<void> {
-  const res = await fetch(SWAGGER_URL);
-  if (!res.ok) throw new Error(`Failed to load Swagger spec: ${res.statusText}`);
-  const spec: any = await res.json();
+  const res = await axios.get(SWAGGER_URL);
+  const spec: any = res.data;
 
   for (const [path, methods] of Object.entries(spec.paths)) {
     const getOp = (methods as any).get;
@@ -35,11 +41,25 @@ export async function loadSwaggerEndpoints(): Promise<void> {
 
     const pathParams = parameters
       .filter((p: any) => p.in === 'path')
-      .map((p: any) => p.name);
+      .map((p: any) => ({
+        name: p.name,
+        type: p.schema?.type || 'string',
+        description: p.description || `Path parameter: ${p.name}`,
+        required: p.required !== false,
+        enum: p.schema?.enum || null,
+        example: p.example || p.schema?.example || null
+      }));
 
     const queryParams = parameters
       .filter((p: any) => p.in === 'query')
-      .map((p: any) => p.name);
+      .map((p: any) => ({
+        name: p.name,
+        type: p.schema?.type || 'string',
+        description: p.description || `Query parameter: ${p.name}`,
+        required: p.required === true,
+        enum: p.schema?.enum || null,
+        example: p.example || p.schema?.example || null
+      }));
 
     endpointMap[toolName] = {
       toolName,
@@ -51,4 +71,14 @@ export async function loadSwaggerEndpoints(): Promise<void> {
   }
 
   console.error(`[MCP] Swagger parsed, ${Object.keys(endpointMap).length} tools loaded.`);
+  
+  // Debug: Log tools with enums
+  Object.values(endpointMap).forEach((tool: any) => {
+    const paramsWithEnums = [...tool.pathParams, ...tool.queryParams].filter((p: any) => p.enum);
+    if (paramsWithEnums.length > 0) {
+      console.error(`[MCP] Tool ${tool.toolName} has enum params:`, 
+        paramsWithEnums.map((p: any) => `${p.name}: [${p.enum.join(',')}]`).join(', ')
+      );
+    }
+  });
 }

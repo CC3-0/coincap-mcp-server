@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
@@ -10,13 +12,12 @@ import {
   loadSwaggerEndpoints,
   endpointMap,
   API_BASE,
-  API_KEY,
 } from './dynamicMcpTools.js';
 
-import fetch from 'node-fetch';
-import express, { Request, Response } from 'express';
+import express from 'express';
 import cors from 'cors';
-import { createServer } from 'http';
+import { createMCPRouter } from './mcpRouter.js';
+import axios from 'axios';
 
 class DynamicMCPServer {
   private server: Server;
@@ -43,11 +44,46 @@ class DynamicMCPServer {
         tools: Object.values(endpointMap).map((def) => {
           const properties: Record<string, any> = {};
 
-          for (const param of [...def.pathParams, ...def.queryParams]) {
-            properties[param] = {
-              type: 'string',
-              description: `Query/path param: ${param}`,
+
+          properties.apiKey = {
+            type: 'string',
+            description: 'CoinCap API key for authentication'
+          };
+
+          for (const param of def.pathParams) {
+            const property: any = {
+              type: param.type,
+              description: param.description
             };
+            
+            if (param.enum && param.enum.length > 0) {
+              property.enum = param.enum;
+              property.description += ` (valid values: ${param.enum.join(', ')})`;
+            }
+            
+            if (param.example) {
+              property.example = param.example;
+            }
+            
+            properties[param.name] = property;
+          }
+
+          for (const param of def.queryParams) {
+            const property: any = {
+              type: param.type,
+              description: param.description
+            };
+            
+            if (param.enum && param.enum.length > 0) {
+              property.enum = param.enum;
+              property.description += ` (valid values: ${param.enum.join(', ')})`;
+            }
+            
+            if (param.example) {
+              property.example = param.example;
+            }
+            
+            properties[param.name] = property;
           }
 
           return {
@@ -56,7 +92,10 @@ class DynamicMCPServer {
             inputSchema: {
               type: 'object',
               properties,
-              required: def.pathParams,
+              required: [
+                ...def.pathParams.filter(p => p.required).map(p => p.name),
+                ...def.queryParams.filter(p => p.required).map(p => p.name)
+              ]
             },
           };
         }),
@@ -76,33 +115,43 @@ class DynamicMCPServer {
 
       try {
         let url = def.path;
-        for (const p of def.pathParams) {
-          if (!args || !args[p]) {
-            throw new Error(`Missing required param: ${p}`);
+        
+        // ✅ FIXED: Handle path parameters as objects
+        for (const param of def.pathParams) {
+          if (!args || !args[param.name]) {
+            throw new Error(`Missing required param: ${param.name}`);
           }
-          url = url.replace(`{${p}}`, encodeURIComponent(args[p]));
+          url = url.replace(`{${param.name}}`, encodeURIComponent(args[param.name]));
         }
 
+        // ✅ FIXED: Handle query parameters as objects
         const searchParams = new URLSearchParams();
-        for (const qp of def.queryParams) {
-          if (args && args[qp] !== undefined) {
-            searchParams.append(qp, String(args[qp]));
+        for (const param of def.queryParams) {
+          if (args && args[param.name] !== undefined && param.name !== 'apiKey') {
+            searchParams.append(param.name, String(args[param.name]));
           }
         }
 
+        // Extract API key from function arguments
+        const apiKey = args?.apiKey;
+        
         const fullUrl = `${API_BASE}${url}${searchParams.toString() ? '?' + searchParams.toString() : ''}`;
-        const headers: Record<string, string> = API_KEY
-          ? { Authorization: `Bearer ${API_KEY}` }
-          : {};
+        
+        // CoinCap uses query parameter for API key, not Authorization header
+        const finalUrl = apiKey 
+          ? `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}apiKey=${apiKey}`
+          : fullUrl;
 
-        const res = await fetch(fullUrl, { headers });
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
-        const json = await res.json();
+        console.error(`[MCP] Calling ${finalUrl.replace(apiKey || '', 'API_KEY_HIDDEN')} with ${apiKey ? 'provided' : 'no'} API key`);
+
+        const res = await axios.get(finalUrl);
+        const json = res.data;
 
         return {
           content: [{ type: 'text', text: JSON.stringify(json, null, 2) }],
         };
       } catch (err: any) {
+        console.error(`[MCP] Error calling ${name}:`, err.message);
         return {
           content: [{ type: 'text', text: `❌ Error: ${err.message}` }],
           isError: true,
@@ -110,7 +159,7 @@ class DynamicMCPServer {
       }
     };
 
-    // Set up the handlers for stdio mode
+    // Set up the handlers for stdio mode - KEEP ALL MCP FUNCTIONALITY
     this.server.setRequestHandler(ListToolsRequestSchema, this.listToolsHandler);
     this.server.setRequestHandler(CallToolRequestSchema, this.callToolHandler);
   }
@@ -122,11 +171,11 @@ class DynamicMCPServer {
     const portArg = process.argv.find(arg => arg.startsWith('--port='));
     
     if (portArg) {
-      // Remote mode
+      // Remote mode using the reusable router
       const port = parseInt(portArg.split('=')[1]);
       await this.startRemoteServer(port);
     } else {
-      // Default stdio mode for Claude Desktop
+      // Default stdio mode for Claude Desktop - FULL MCP FUNCTIONALITY
       const transport = new StdioServerTransport();
       await this.server.connect(transport);
       console.error(`🚀 MCP local server ready via stdio`);
@@ -140,55 +189,25 @@ class DynamicMCPServer {
     app.use(cors());
     app.use(express.json());
 
-    // Health check endpoint
-    app.get('/health', (req: Request, res: Response) => {
-      res.json({ status: 'ok', server: 'cryptocurrency-mcp-server', version: '0.2.0' });
-    });
+    // Use the reusable MCP router
+    const mcpRouter = createMCPRouter();
+    app.use('/mcp', mcpRouter);
 
-    // MCP JSON-RPC endpoint - handle requests directly without transport
-    app.post('/mcp', async (req: Request, res: Response) => {
-      try {
-        const request = req.body;
-        
-        if (request.method === 'tools/list') {
-          const response = await this.listToolsHandler();
-          res.json({
-            jsonrpc: '2.0',
-            id: request.id,
-            result: response
-          });
-        } else if (request.method === 'tools/call') {
-          const response = await this.callToolHandler({ 
-            method: 'tools/call', 
-            params: request.params 
-          });
-          res.json({
-            jsonrpc: '2.0',
-            id: request.id,
-            result: response
-          });
-        } else {
-          res.status(400).json({
-            jsonrpc: '2.0',
-            id: request.id,
-            error: { code: -32601, message: 'Method not found' }
-          });
-        }
-      } catch (error: any) {
-        res.status(500).json({
-          jsonrpc: '2.0',
-          id: req.body?.id,
-          error: { code: -32603, message: error.message }
-        });
-      }
-    });
+    // Also expose at root for backwards compatibility
+    app.use('/', mcpRouter);
 
     app.listen(port, '0.0.0.0', () => {
       console.error(`🚀 MCP remote server ready on port ${port}`);
       console.error(`   Health check: http://localhost:${port}/health`);
       console.error(`   MCP endpoint: http://localhost:${port}/mcp`);
+      console.error(`   MCP root endpoint: http://localhost:${port}/`);
     });
   }
 }
 
-new DynamicMCPServer().run().catch(console.error);
+// Only run if this file is executed directly
+if (process.argv[1] && process.argv[1].endsWith('index.js')) {
+  new DynamicMCPServer().run().catch(console.error);
+}
+
+export default DynamicMCPServer;
