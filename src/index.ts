@@ -210,4 +210,5 @@ if (process.argv[1] && process.argv[1].endsWith('index.js')) {
   new DynamicMCPServer().run().catch(console.error);
 }
 
+export { createMCPRouter };
 export default DynamicMCPServer;

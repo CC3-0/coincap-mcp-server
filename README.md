@@ -32,7 +32,7 @@ Add this to your Claude Desktop MCP configuration file:
   "mcpServers": {
     "crypto-prices": {
       "command": "node",
-      "args": ["/path/to/your/coincap-mcp/dist/index.js"],
+      "args": ["/path/to/your/cc-test-mcp-private/dist/index.js"],
       "env": {
           "COINCAP_API_KEY": "your_coincap_api_key_here"
       }
@@ -50,7 +50,7 @@ You may need to point the "command" to a specific Node.js version:
   "mcpServers": {
     "crypto-prices": {
       "command": "/Users/username/.nvm/versions/node/v18.12.1/bin/node",
-      "args": ["/Users/username/Downloads/coincap-mcp/dist/index.js"],
+      "args": ["/Users/username/Downloads/cc-test-mcp-private/dist/index.js"],
       "env": {
           "COINCAP_API_KEY": "your_coincap_api_key_here"
       }
