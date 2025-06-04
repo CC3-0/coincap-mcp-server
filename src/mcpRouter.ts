@@ -1,6 +1,4 @@
-
-
-// ===== mcpRouter.js (COMPLETE FILE) =====
+// ===== mcpRouter.js (COMPLETE FILE WITH SSE SUPPORT) =====
 import { Router, Request, Response } from 'express';
 import {
   loadSwaggerEndpoints,
@@ -144,6 +142,49 @@ class MCPRouterService {
     }
   }
 
+  private async handleMCPRequest(request: any): Promise<any> {
+    if (request.method === 'initialize') {
+      await this.initialize();
+      return {
+        jsonrpc: '2.0',
+        id: request.id,
+        result: {
+          protocolVersion: '2024-11-05',
+          capabilities: {
+            tools: {}
+          },
+          serverInfo: {
+            name: 'cryptocurrency-mcp-server',
+            version: '0.2.0'
+          }
+        }
+      };
+    } else if (request.method === 'tools/list') {
+      const response = await this.listToolsHandler();
+      return {
+        jsonrpc: '2.0',
+        id: request.id,
+        result: response
+      };
+    } else if (request.method === 'tools/call') {
+      const response = await this.callToolHandler({ 
+        method: 'tools/call', 
+        params: request.params 
+      });
+      return {
+        jsonrpc: '2.0',
+        id: request.id,
+        result: response
+      };
+    } else {
+      return {
+        jsonrpc: '2.0',
+        id: request.id,
+        error: { code: -32601, message: `Method not found: ${request.method}` }
+      };
+    }
+  }
+
   getRouter(): Router {
     const router = Router();
 
@@ -153,47 +194,83 @@ class MCPRouterService {
         status: 'ok', 
         server: 'cryptocurrency-mcp-server', 
         version: '0.2.0',
-        features: ['per-call-api-keys', 'dynamic-swagger-tools']
+        features: ['per-call-api-keys', 'dynamic-swagger-tools', 'streamable-http', 'json-rpc-http']
       });
     });
 
-    // MCP JSON-RPC endpoint
+    // Streamable HTTP endpoint (new MCP standard)
     router.post('/', async (req: Request, res: Response) => {
       try {
         const request = req.body;
+        console.log('Streamable HTTP request:', request.method);
         
-        if (request.method === 'tools/list') {
-          const response = await this.listToolsHandler();
-          res.json({
-            jsonrpc: '2.0',
-            id: request.id,
-            result: response
-          });
-        } else if (request.method === 'tools/call') {
-          const response = await this.callToolHandler({ 
-            method: 'tools/call', 
-            params: request.params 
-          });
-          res.json({
-            jsonrpc: '2.0',
-            id: request.id,
-            result: response
-          });
-        } else {
-          res.status(400).json({
-            jsonrpc: '2.0',
-            id: request.id,
-            error: { code: -32601, message: 'Method not found' }
-          });
-        }
+        // Set headers for streamable response
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization');
+        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        
+        const response = await this.handleMCPRequest(request);
+        res.json(response);
       } catch (error: any) {
-        console.error('[MCP] Router error:', error.message);
+        console.error('[MCP] Streamable HTTP error:', error.message);
         res.status(500).json({
           jsonrpc: '2.0',
           id: req.body?.id,
           error: { code: -32603, message: error.message }
         });
       }
+    });
+
+    // Legacy SSE endpoint (for backwards compatibility)
+    router.get('/', async (req: Request, res: Response) => {
+      console.log('SSE connection initiated (deprecated) from:', req.ip);
+      
+      try {
+        // Set SSE headers
+        res.writeHead(200, {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Cache-Control, Content-Type, Accept, Authorization',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+        });
+
+        // Send deprecation notice
+        res.write(': SSE transport is deprecated, use streamable-http\n\n');
+        
+        // Keep minimal connection alive
+        const keepAlive = setInterval(() => {
+          try {
+            res.write(': ping\n\n');
+          } catch (err) {
+            clearInterval(keepAlive);
+          }
+        }, 30000);
+
+        req.on('close', () => {
+          console.log('SSE connection closed');
+          clearInterval(keepAlive);
+        });
+
+        req.on('error', (err) => {
+          console.error('SSE connection error:', err);
+          clearInterval(keepAlive);
+        });
+
+      } catch (error) {
+        console.error('SSE: Failed to initialize connection:', error);
+        res.status(500).end();
+      }
+    });
+
+    // OPTIONS endpoint for CORS
+    router.options('/', (req: Request, res: Response) => {
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization');
+      res.sendStatus(200);
     });
 
     return router;

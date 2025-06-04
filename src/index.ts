@@ -191,15 +191,13 @@ class DynamicMCPServer {
 
     // Use the reusable MCP router
     const mcpRouter = createMCPRouter();
-    app.use('/mcp', mcpRouter);
 
     // Also expose at root for backwards compatibility
     app.use('/', mcpRouter);
 
-    app.listen(port, '0.0.0.0', () => {
+    app.listen(port, '127.0.0.1', () => {
       console.error(`🚀 MCP remote server ready on port ${port}`);
       console.error(`   Health check: http://localhost:${port}/health`);
-      console.error(`   MCP endpoint: http://localhost:${port}/mcp`);
       console.error(`   MCP root endpoint: http://localhost:${port}/`);
     });
   }

@@ -1,5 +1,5 @@
 {
-  "name": "@coincap_io/cc-test-mcp-private",
+  "name": "@coincap/cc-test-mcp-private",
   "version": "0.2.0",
   "description": "CoinCap.io MCP server with cryptocurrency data and technical analysis tools",
   "type": "commonjs",
