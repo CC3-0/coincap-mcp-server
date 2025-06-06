@@ -1,7 +1,7 @@
 {
   "name": "@coincap/cc-test-mcp-private",
-  "version": "0.2.0",
-  "description": "CoinCap.io MCP server with cryptocurrency data and technical analysis tools",
+  "version": "0.3.0",
+  "description": "CoinCap.io MCP server serving the coincap rest api via mcp",
   "type": "commonjs",
   "main": "dist/index.js",
   "bin": {
