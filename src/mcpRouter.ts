@@ -129,7 +129,14 @@ class MCPRouterService {
     } else if (request.method === 'tools/call') {
       const result = await this.callToolHandler({ params: request.params });
       return { jsonrpc: '2.0', id: request.id, result };
-    } else {
+    } else if (request.method === 'ping') {
+      return {
+        jsonrpc: '2.0',
+        id: request.id,
+        result: {}
+      };
+    }
+    else {
       return {
         jsonrpc: '2.0',
         id: request.id,
