@@ -88,7 +88,7 @@ class MCPRouterService {
         }
       }
 
-      const apiKey = args?.apiKey;
+const apiKey = args?.apiKey || process.env.COINCAP_API_KEY;
       const fullUrl = `${API_BASE}${url}${searchParams.toString() ? '?' + searchParams.toString() : ''}`;
       const finalUrl = apiKey
         ? `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}apiKey=${apiKey}`
@@ -248,7 +248,11 @@ export async function callToolFromStdio(name: string, args: any) {
       }
     }
 
-    const apiKey = args?.apiKey;
+  const apiKey =
+    args?.apiKey ||
+    process.env.COINCAP_API_KEY ||    // <--- env fallback
+    undefined;
+    
     const fullUrl = `${API_BASE}${url}${searchParams.toString() ? '?' + searchParams.toString() : ''}`;
     const finalUrl = apiKey
       ? `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}apiKey=${apiKey}`
