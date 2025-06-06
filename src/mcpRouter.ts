@@ -201,6 +201,8 @@ export function createMCPRouter(): Router {
 }
 
 export async function callToolFromStdio(name: string, args: any) {
+  console.error(`[MCP] Tool call: ${name}`);
+  console.error(`[MCP] Args:`, JSON.stringify(args, null, 2));
   const def = endpointMap[name];
   if (!def) {
     return {
