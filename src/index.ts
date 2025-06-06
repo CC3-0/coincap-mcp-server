@@ -65,7 +65,9 @@ class DynamicMCPServer {
 private async startHttpServer(port: number): Promise<void> {
   const app = express();
   app.use(cors());
-  app.use(express.text({ type: '*/*' })); // allow newline-delimited JSON
+  app.use(express.json()); // Handles application/json (standard JSON POST)
+  app.use(express.text({ type: 'text/plain' })); // Optional: for NDJSON or raw text, if you want to keep it
+
   app.use('/mcp', createMCPRouter());
 
   app.listen(port, '127.0.0.1', () => {
