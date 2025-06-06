@@ -42,10 +42,10 @@ class DynamicMCPServer {
       }))
     }));
 
-  this.server.setRequestHandler(CallToolRequestSchema, async (req) => {
-    const { name, arguments: args } = req.params;
-    return await callToolFromStdio(name, args);
-  });
+    this.server.setRequestHandler(CallToolRequestSchema, async (req) => {
+      const { name, arguments: args } = req.params;
+      return await callToolFromStdio(name, args);
+    });
   }
 
   async run(): Promise<void> {
