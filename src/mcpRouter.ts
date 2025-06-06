@@ -158,38 +158,52 @@ class MCPRouterService {
     });
 
     // Streamable HTTP MCP Inspector-compatible endpoint
-    router.post('/', async (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response) => {
+  console.log('[DEBUG] typeof req.body:', typeof req.body);
+console.log('[DEBUG] req.body:', req.body);
+  try {
+    let requests: any[] = [];
+
+    // Detect NDJSON (text/plain) or JSON
+    if (typeof req.body === 'string') {
+      // NDJSON/text
+      requests = req.body
+        .split('\n')
+        .map((l: any) => l.trim())
+        .filter(Boolean)
+        .map(line => JSON.parse(line));
+    } else if (typeof req.body === 'object') {
+      // Single JSON object
+      requests = [req.body];
+    } else {
+      res.status(400).json({ error: 'Unsupported body type' });
+      return;
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    for (const parsed of requests) {
       try {
-        const body = typeof req.body === 'string'
-          ? req.body
-          : req.body?.toString?.() ?? '';
-
-        const lines = body.split('\n').map((l: any) => l.trim()).filter(Boolean);
-
-        res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Cache-Control', 'no-cache');
-        res.setHeader('Connection', 'keep-alive');
-
-        for (const line of lines) {
-          try {
-            const parsed = JSON.parse(line);
-            const response = await this.handleMCPRequest(parsed);
-            res.write(JSON.stringify(response) + '\n');
-          } catch {
-            res.write(JSON.stringify({
-              jsonrpc: '2.0',
-              id: null,
-              error: { code: -32700, message: 'Parse error' }
-            }) + '\n');
-          }
-        }
-
-        res.end();
-      } catch (e: any) {
-        console.error('[MCP] /mcp error:', e.message);
-        res.status(500).end();
+        const response = await this.handleMCPRequest(parsed);
+        res.write(JSON.stringify(response) + '\n');
+      } catch (err) {
+        res.write(JSON.stringify({
+          jsonrpc: '2.0',
+          id: null,
+          error: { code: -32700, message: 'Parse error' }
+        }) + '\n');
       }
-    });
+    }
+
+    res.end();
+  } catch (e: any) {
+    console.error('[MCP] /mcp error:', e.message);
+    res.status(500).end();
+  }
+});
+
 
     router.options('/mcp', (_req, res) => {
       res.header('Access-Control-Allow-Origin', '*');
