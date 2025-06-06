@@ -76,6 +76,8 @@ private async startHttpServer(port: number): Promise<void> {
 }
 }
 
-if (process.argv[1]?.endsWith('index.js') || process.argv[1]?.endsWith('index.ts')) {
+if (require.main === module) {
   new DynamicMCPServer().run().catch(console.error);
 }
+
+export * from './mcpRouter';

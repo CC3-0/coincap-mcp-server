@@ -1,6 +1,6 @@
 {
   "name": "@coincap/cc-test-mcp-private",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "description": "CoinCap.io MCP server serving the coincap rest api via mcp",
   "type": "commonjs",
   "main": "dist/index.js",
