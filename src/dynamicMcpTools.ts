@@ -28,7 +28,6 @@ export async function loadSwaggerEndpoints(): Promise<void> {
   const spec: any = res.data;
 
   for (const [path, methods] of Object.entries(spec.paths)) {
-    console.log('swagger path is', path);
     if (path.includes('{}')) {
      console.error(`[Swagger] ❌ Invalid path: ${path}`);
   }

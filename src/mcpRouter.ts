@@ -94,8 +94,6 @@ class MCPRouterService {
         ? `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}apiKey=${apiKey}`
         : fullUrl;
 
-      console.log(`[MCP] Calling: ${finalUrl}`);
-
       const res = await axios.get(finalUrl);
       return {
         content: [{ type: 'text', text: JSON.stringify(res.data, null, 2) }]
@@ -109,6 +107,7 @@ class MCPRouterService {
     }
   }
 
+  
   async handleMCPRequest(request: any): Promise<any> {
     if (request.method === 'initialize') {
       await this.initialize();
@@ -199,4 +198,47 @@ class MCPRouterService {
 export function createMCPRouter(): Router {
   const service = new MCPRouterService();
   return service.getRouter();
+}
+
+export async function callToolFromStdio(name: string, args: any) {
+  const def = endpointMap[name];
+  if (!def) {
+    return {
+      content: [{ type: 'text', text: `Unknown tool: ${name}` }],
+      isError: true
+    };
+  }
+
+  try {
+    let url = def.path;
+    for (const param of def.pathParams) {
+      if (!args?.[param.name]) {
+        throw new Error(`Missing required param: ${param.name}`);
+      }
+      url = url.replace(`{${param.name}}`, encodeURIComponent(args[param.name]));
+    }
+
+    const searchParams = new URLSearchParams();
+    for (const param of def.queryParams) {
+      if (args?.[param.name] !== undefined && param.name !== 'apiKey') {
+        searchParams.append(param.name, String(args[param.name]));
+      }
+    }
+
+    const apiKey = args?.apiKey;
+    const fullUrl = `${API_BASE}${url}${searchParams.toString() ? '?' + searchParams.toString() : ''}`;
+    const finalUrl = apiKey
+      ? `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}apiKey=${apiKey}`
+      : fullUrl;
+
+    const res = await axios.get(finalUrl);
+    return {
+      content: [{ type: 'text', text: JSON.stringify(res.data, null, 2) }]
+    };
+  } catch (err: any) {
+    return {
+      content: [{ type: 'text', text: `❌ Error: ${err.message}` }],
+      isError: true
+    };
+  }
 }
