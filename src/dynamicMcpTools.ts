@@ -1,4 +1,3 @@
-// ===== dynamicMcpTools.js (COMPLETE FILE) =====
 import axios from 'axios';
 
 export const SWAGGER_URL = 'https://rest.staging.wagmi.productions/api-docs.json';
