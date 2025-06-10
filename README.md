@@ -102,24 +102,16 @@ This starts an HTTP server on `http://127.0.0.1:3001/mcp`
 
 #### Using with MCP Inspector :
 
-The MCP Inspector (https://github.com/modelcontextprotocol/inspector) allows you to:
-- Browse available tools
-- Test tool calls interactively
-- View real-time responses
-- Debug your MCP server
-
+The MCP Inspector (https://github.com/modelcontextprotocol/inspector) allows you to Browse available tools & make calls.
 ```bash
-# Install MCP Inspector globally if not already installed
+# Start mcp inspector
 npx @modelcontextprotocol/inspector
 
 ```
 
-#### Curl examples:
+Visit the local mcp inspector in the browser, set mode to `streamable HTTP` mode, and url to `http://127.0.0.1:3001/mcp`
 
-**Health Check:**
-```bash
-curl http://127.0.0.1:3001/mcp/health
-```
+#### Curl examples:
 
 **List Available Tools:**
 ```bash
@@ -159,13 +151,6 @@ The server dynamically loads tools from the CoinCap API specification, providing
 - **Asset Tools** - Cryptocurrency listings, details, historical data, and markets
 - **Technical Analysis Tools** - RSI, SMA, EMA, MACD, VWAP, and candlestick data
 - **Market & Exchange Tools** - Exchange listings, market data, and conversion rates
-
-**Common Parameters:**
-- **`slug`** - Asset identifier (e.g., "bitcoin", "ethereum")
-- **`limit`** - Number of results to return
-- **`offset`** - Pagination offset
-- **`interval`** - Time interval for historical data
-- **`apiKey`** - Your CoinCap API key (optional, can use environment variable)
 
 To see all available tools and their parameters, use the "List Available Tools" command above or connect via MCP Inspector.
 
