@@ -6,6 +6,7 @@ import {
 } from './dynamicMcpTools.js'
 import axios from 'axios'
 
+const mcpServerVersion = '1.0.2' // match package.json version
 class MCPRouterService {
   private initialized = false
 
@@ -95,9 +96,9 @@ class MCPRouterService {
       const fullUrl = `${API_BASE}${url}${
         searchParams.toString() ? '?' + searchParams.toString() : ''
       }`
-      const finalUrl = apiKey
-        ? `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}apiKey=${apiKey}`
-        : fullUrl
+
+      if(!apiKey) throw new Error('API key is required')
+      const finalUrl = `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}apiKey=${apiKey}&mcpServerVersion=${mcpServerVersion}`
 
       const res = await axios.get(finalUrl)
       return {
@@ -263,9 +264,8 @@ export async function callToolFromStdio (name: string, args: any) {
     const fullUrl = `${API_BASE}${url}${
       searchParams.toString() ? '?' + searchParams.toString() : ''
     }`
-    const finalUrl = apiKey
-      ? `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}apiKey=${apiKey}`
-      : fullUrl
+    if(!apiKey) throw new Error('API key is required')
+    const finalUrl = `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}apiKey=${apiKey}&mcpServerVersion=${mcpServerVersion}`
 
     const res = await axios.get(finalUrl)
     return {
