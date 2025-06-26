@@ -37,7 +37,21 @@ class DynamicMCPServer {
         description: def.description,
         inputSchema: {
           type: 'object',
-          properties: {} // not used for stdio mode
+          properties: Object.fromEntries(
+            [...def.pathParams, ...def.queryParams].map(param => [
+              param.name,
+              {
+                type: param.type,
+                description: param.description,
+                ...(param.enum ? { enum: param.enum } : {}),
+                ...(param.example ? { example: param.example } : {})
+              }
+            ])
+          ),
+          required: [
+            ...def.pathParams.filter(p => p.required).map(p => p.name),
+            ...def.queryParams.filter(p => p.required).map(p => p.name)
+          ]
         }
       }))
     }))
