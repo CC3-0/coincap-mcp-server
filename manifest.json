@@ -42,9 +42,9 @@
     "NODE_PATH": {
       "type": "string",
       "title": "Node.js Executable Path",
-      "description": "Path to Node 18+ executable (Default path is example)",
+      "description": "Path to Node Executable (modify if default doesn't work)",
       "required": true,
-      "default": "/example/user_home/.nvm/versions/node/v18.12.1/bin/node"
+      "default": "node"
     }
   },
   "keywords": [
