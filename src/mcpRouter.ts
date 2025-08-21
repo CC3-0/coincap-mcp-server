@@ -6,7 +6,7 @@ import {
 } from './dynamicMcpTools.js'
 import axios from 'axios'
 
-const mcpServerVersion = '1.0.2' // match package.json version
+const mcpServerVersion = '1.0.4' // match package.json version
 class MCPRouterService {
   private initialized = false
 
