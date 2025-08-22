@@ -2,7 +2,7 @@ import axios from 'axios'
 
 export const SWAGGER_URL =
   'https://rest.coincap.io/api-docs.json'
-export const API_BASE = 'https://rest.coincap.io'
+export const API_BASE = 'https://rest.coincap.io/v3'
 
 export type ParameterDetail = {
   name: string
