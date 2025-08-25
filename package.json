@@ -1,0 +1,47 @@
+{
+  "name": "@coincap/coincap-mcp-server",
+  "version": "1.0.5",
+  "description": "CoinCap.io MCP server serving the coincap rest api via mcp",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "bin": {
+    "coincap-mcp-server": "dist/index.js"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md"
+  ],
+  "keywords": [
+    "mcp",
+    "cryptocurrency",
+    "bitcoin",
+    "trading",
+    "technical-analysis",
+    "coincap"
+  ],
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "startRemote": "node dist/index.js --port=3001"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.0",
+    "axios": "^1.9.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^5.1.0",
+    "node-fetch": "^3.3.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.18",
+    "@types/express": "^5.0.2",
+    "@types/node": "^20.10.1",
+    "tsx": "^4.6.2",
+    "typescript": "^5.4.2"
+  }
+}

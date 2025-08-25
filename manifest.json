@@ -1,0 +1,58 @@
+{
+  "dxt_version": "0.1",
+  "name": "Coincap",
+  "version": "1.0.3",
+  "description": "CoinCap.io MCP server serving the coincap rest api via mcp",
+  "author": {
+    "name": "Coincap",
+    "url": "https://coincap.io"
+  },
+  "homepage": "https://coincap.io",
+  "documentation": "https://github.com/CC3-0/coincap-mcp-server",
+  "support": "https://coincap.io",
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "${user_config.NODE_PATH}",
+      "args": [
+        "${__dirname}/dist/index.js"
+      ],
+      "env": {
+        "COINCAP_API_KEY": "${user_config.COINCAP_API_KEY}"
+      }
+    }
+  },
+  "tools_generated": true,
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ]
+  },
+  "user_config": {
+    "COINCAP_API_KEY": {
+      "type": "string",
+      "title": "CoinCap API Key",
+      "description": "Your CoinCap.io API key for accessing cryptocurrency data",
+      "required": true,
+      "sensitive": true
+    },
+    "NODE_PATH": {
+      "type": "string",
+      "title": "Node.js Executable Path",
+      "description": "Path to Node Executable (modify if default doesn't work)",
+      "required": true,
+      "default": "node"
+    }
+  },
+  "keywords": [
+    "crypto prices"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CC3-0/coincap-mcp-server"
+  }
+}
