@@ -1,6 +1,6 @@
 {
   "name": "@coincap/coincap-mcp-server",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "CoinCap.io MCP server serving the coincap rest api via mcp",
   "type": "commonjs",
   "main": "dist/index.js",
@@ -43,5 +43,8 @@
     "@types/node": "^20.10.1",
     "tsx": "^4.6.2",
     "typescript": "^5.4.2"
-  }
+  },
+  "publishConfig": {
+  "access": "public"
+}
 }
