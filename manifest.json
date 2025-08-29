@@ -1,15 +1,18 @@
 {
   "dxt_version": "0.1",
-  "name": "Coincap",
-  "version": "1.0.3",
-  "description": "CoinCap.io MCP server serving the coincap rest api via mcp",
+  "name": "CoinCap Market Data MCP",
+  "version": "1.0.0",
+  "description": "Add real‑time cryptocurrency data to your workflows with the CoinCap MCP Server. This lightweight Node‑based tool dynamically loads every CoinCap.io endpoint to bring you live prices, market caps and technical indicators in a single package. Built for Claude Desktop and other MCP clients, it runs via stdio or HTTP and works seamlessly across macOS, Windows and Linux.",
+  "long_description": "The CoinCap MCP Server turns the trusted CoinCap API into a catalog of ready‑to‑use tools for your AI or automation environment. When launched, it reads CoinCap’s Swagger specification and auto‑generates tools for every endpoint with no manual coding required. Use the JSON‑RPC “tools/list” command to discover what’s available, then call any endpoint to retrieve crypto‑asset listings, price history, circulating supply or exchange‑specific market data. For deeper analysis, it also exposes technical indicators such as RSI, SMA, EMA, MACD, VWAP and candlestick patterns, along with currency conversion rates and exchange listings. Designed with flexibility in mind, the server supports both stdio transport for Claude Desktop and a streamable HTTP mode for remote clients. A simple environment variable holds your CoinCap API key, and the same build runs on darwin, win32 and linux. Whether you’re building a chatbot that answers crypto questions or a dashboard that visualizes market trends, the CoinCap MCP Server delivers up‑to‑the‑minute data and technical analysis tools right out of the box.",
   "author": {
-    "name": "Coincap",
+    "name": "CoinCap",
+    "email": "justin.coincap@gmail.com",
     "url": "https://coincap.io"
   },
-  "homepage": "https://coincap.io",
-  "documentation": "https://github.com/CC3-0/coincap-mcp-server",
-  "support": "https://coincap.io",
+  "homepage": "https://pro.coincap.io/dashboard",
+  "documentation": "https://pro.coincap.io/api-docs",
+  "support": "https://mee6.xyz/i/S3ZfymIhLR",
+  "icon": "coincap_mcp.png",
   "server": {
     "type": "node",
     "entry_point": "dist/index.js",
