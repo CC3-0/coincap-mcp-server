@@ -49,10 +49,31 @@ yarn build
 
 ### Option 1: Claude Desktop Extension File
 
-This is the easiest way to see the CoinCap MCP Server in action.
+This is the easiest way to use the CoinCap MCP Server. Requires the Claude Desktop app.
 
-1. Download the latest built .dxt file here: https://github.com/CC3-0/coincap-mcp-server/raw/refs/heads/main/coincap-mcp-clean.dxt
-2. Open it with Claude Desktop and set your CoinCap API key in the extension settings.
+1. Download the latest built Desktop Extension file here: https://github.com/CC3-0/coincap-mcp-server/raw/refs/heads/main/coincap-mcp-clean.dxt
+2. Locate the ‘coincap-mcp-clean.dxt file on your computer and right-click on the file.
+3. Select: Open With > Claude
+4. In the Preview popup within Claude Desktop, click the 'install' button
+<img width="738" height="233" alt="Screenshot 2025-09-10 at 2 02 14 PM" src="https://github.com/user-attachments/assets/4118db55-89ae-4c52-9b2b-5a01a9641808" />
+
+
+5. This will open a Configuration popup. In the 'CoinCap API Key' field, paste in your CoinCap API key. **(If you do not already have a CoinCap API key, you can get one by creating a free CoinCap Pro account here: https://pro.coincap.io/dashboard)**
+<img width="534" height="370" alt="Screenshot 2025-09-10 at 2 02 26 PM" src="https://github.com/user-attachments/assets/bc4a7068-ae9e-43e4-ab41-534b66999526" />
+
+
+7. You do not need to change anything in the 'Node.js Executable Path' field.
+8. Click 'Save' at the bottom of the configuration popup
+9. On the Extension preview popup, enable the MCP server by switching the toggle from 'disabled' to 'enabled'.
+<img width="693" height="79" alt="Screenshot 2025-09-10 at 2 02 40 PM" src="https://github.com/user-attachments/assets/43155251-cbb0-4f4e-98e5-cb1736aeed23" />
+
+
+10. Close the preview popup and start a new chat.
+11. Click the 'Search and tools' button in the chat text box to verify that the CoinCap MCP is installed and enabled properly.
+<img width="703" height="487" alt="Screenshot 2025-09-10 at 2 03 13 PM" src="https://github.com/user-attachments/assets/3aaff85c-0168-4801-89ae-fdceb0b6909d" />
+
+
+12. You're ready to access CoinCap's crypto market data through Claude Desktop!
 
 For more information on Claude Desktop Extenions see https://www.anthropic.com/engineering/desktop-extensions
 
