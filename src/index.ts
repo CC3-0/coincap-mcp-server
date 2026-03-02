@@ -38,19 +38,20 @@ class DynamicMCPServer {
         inputSchema: {
           type: 'object',
           properties: Object.fromEntries(
-            [...def.pathParams, ...def.queryParams].map(param => [
+            [...def.pathParams, ...def.queryParams, ...def.bodyParams].map(param => [
               param.name,
               {
                 type: param.type,
                 description: param.description,
-                ...(param.enum ? { enum: param.enum } : {}),
-                ...(param.example ? { example: param.example } : {})
+                ...('enum' in param && param.enum ? { enum: param.enum } : {}),
+                ...('example' in param && param.example ? { example: param.example } : {})
               }
             ])
           ),
           required: [
             ...def.pathParams.filter(p => p.required).map(p => p.name),
-            ...def.queryParams.filter(p => p.required).map(p => p.name)
+            ...def.queryParams.filter(p => p.required).map(p => p.name),
+            ...def.bodyParams.filter(p => p.required).map(p => p.name)
           ]
         }
       }))

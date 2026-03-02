@@ -7,6 +7,53 @@ import {
 import axios from 'axios'
 
 const mcpServerVersion = '1.0.5' // match package.json version
+
+import type { EndpointDef } from './dynamicMcpTools.js'
+
+async function executeToolRequest (def: EndpointDef, args: any) {
+  let url = def.path
+  for (const param of def.pathParams) {
+    if (args?.[param.name] == null) {
+      throw new Error(`Missing required param: ${param.name}`)
+    }
+    url = url.replace(`{${param.name}}`, encodeURIComponent(args[param.name]))
+  }
+
+  const searchParams = new URLSearchParams()
+  for (const param of def.queryParams) {
+    if (args?.[param.name] !== undefined && param.name !== 'apiKey') {
+      searchParams.append(param.name, String(args[param.name]))
+    }
+  }
+
+  const apiKey = args?.apiKey || process.env.COINCAP_API_KEY
+  const fullUrl = `${API_BASE}${url}${
+    searchParams.toString() ? '?' + searchParams.toString() : ''
+  }`
+
+  if (!apiKey && def.method === 'get') throw new Error('API key is required')
+  const sep = fullUrl.includes('?') ? '&' : '?'
+  const finalUrl = apiKey
+    ? `${fullUrl}${sep}apiKey=${apiKey}&mcpServerVersion=${mcpServerVersion}`
+    : `${fullUrl}${sep}mcpServerVersion=${mcpServerVersion}`
+
+  let res
+  if (def.method === 'post') {
+    const body: Record<string, any> = {}
+    for (const param of def.bodyParams) {
+      if (args?.[param.name] !== undefined) {
+        body[param.name] = args[param.name]
+      }
+    }
+    res = await axios.post(finalUrl, body)
+  } else {
+    res = await axios.get(finalUrl)
+  }
+  return {
+    content: [{ type: 'text', text: JSON.stringify(res.data, null, 2) }]
+  }
+}
+
 class MCPRouterService {
   private initialized = false
 
@@ -43,6 +90,12 @@ class MCPRouterService {
           }
           properties[param.name] = prop
         }
+        for (const param of def.bodyParams) {
+          properties[param.name] = {
+            type: param.type,
+            description: param.description
+          }
+        }
 
         return {
           name: def.toolName,
@@ -52,7 +105,8 @@ class MCPRouterService {
             properties,
             required: [
               ...def.pathParams.filter(p => p.required).map(p => p.name),
-              ...def.queryParams.filter(p => p.required).map(p => p.name)
+              ...def.queryParams.filter(p => p.required).map(p => p.name),
+              ...def.bodyParams.filter(p => p.required).map(p => p.name)
             ]
           }
         }
@@ -73,37 +127,7 @@ class MCPRouterService {
     }
 
     try {
-      let url = def.path
-
-      for (const param of def.pathParams) {
-        if (!args?.[param.name]) {
-          throw new Error(`Missing required param: ${param.name}`)
-        }
-        url = url.replace(
-          `{${param.name}}`,
-          encodeURIComponent(args[param.name])
-        )
-      }
-
-      const searchParams = new URLSearchParams()
-      for (const param of def.queryParams) {
-        if (args?.[param.name] !== undefined && param.name !== 'apiKey') {
-          searchParams.append(param.name, String(args[param.name]))
-        }
-      }
-
-      const apiKey = args?.apiKey || process.env.COINCAP_API_KEY
-      const fullUrl = `${API_BASE}${url}${
-        searchParams.toString() ? '?' + searchParams.toString() : ''
-      }`
-
-      if(!apiKey) throw new Error('API key is required')
-      const finalUrl = `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}apiKey=${apiKey}&mcpServerVersion=${mcpServerVersion}`
-
-      const res = await axios.get(finalUrl)
-      return {
-        content: [{ type: 'text', text: JSON.stringify(res.data, null, 2) }]
-      }
+      return await executeToolRequest(def, args)
     } catch (err: any) {
       console.error(`[MCP] Error calling ${name}:`, err.message)
       return {
@@ -241,36 +265,7 @@ export async function callToolFromStdio (name: string, args: any) {
   }
 
   try {
-    let url = def.path
-    for (const param of def.pathParams) {
-      if (!args?.[param.name]) {
-        throw new Error(`Missing required param: ${param.name}`)
-      }
-      url = url.replace(`{${param.name}}`, encodeURIComponent(args[param.name]))
-    }
-
-    const searchParams = new URLSearchParams()
-    for (const param of def.queryParams) {
-      if (args?.[param.name] !== undefined && param.name !== 'apiKey') {
-        searchParams.append(param.name, String(args[param.name]))
-      }
-    }
-
-    const apiKey =
-      args?.apiKey ||
-      process.env.COINCAP_API_KEY || // <--- env fallback
-      undefined
-
-    const fullUrl = `${API_BASE}${url}${
-      searchParams.toString() ? '?' + searchParams.toString() : ''
-    }`
-    if(!apiKey) throw new Error('API key is required')
-    const finalUrl = `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}apiKey=${apiKey}&mcpServerVersion=${mcpServerVersion}`
-
-    const res = await axios.get(finalUrl)
-    return {
-      content: [{ type: 'text', text: JSON.stringify(res.data, null, 2) }]
-    }
+    return await executeToolRequest(def, args)
   } catch (err: any) {
     return {
       content: [{ type: 'text', text: `❌ Error: ${err.message}` }],
