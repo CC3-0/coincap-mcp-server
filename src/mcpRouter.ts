@@ -6,7 +6,7 @@ import {
 } from './dynamicMcpTools.js'
 import axios from 'axios'
 
-const mcpServerVersion = '1.0.5' // match package.json version
+const mcpServerVersion = '1.0.8' // match package.json version
 
 import type { EndpointDef } from './dynamicMcpTools.js'
 
