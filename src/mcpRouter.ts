@@ -13,7 +13,7 @@ import type { EndpointDef } from './dynamicMcpTools.js'
 async function executeToolRequest (def: EndpointDef, args: any) {
   let url = def.path
   for (const param of def.pathParams) {
-    if (!args?.[param.name]) {
+    if (args?.[param.name] == null) {
       throw new Error(`Missing required param: ${param.name}`)
     }
     url = url.replace(`{${param.name}}`, encodeURIComponent(args[param.name]))
