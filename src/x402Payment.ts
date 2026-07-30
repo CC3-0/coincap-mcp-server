@@ -53,9 +53,18 @@ export function getPaidFetch (): FetchLike | null {
     .register('eip155:8453', new ExactEvmScheme(account))
     .register('eip155:84532', new ExactEvmScheme(account))
 
-  const maxAtomic = BigInt(
-    process.env.X402_MAX_PAYMENT_ATOMIC_USDC ?? DEFAULT_MAX_ATOMIC
-  )
+  const rawMax = process.env.X402_MAX_PAYMENT_ATOMIC_USDC
+  let maxAtomic: bigint
+  if (rawMax === undefined || rawMax === '') {
+    maxAtomic = DEFAULT_MAX_ATOMIC
+  } else if (/^\d+$/.test(rawMax)) {
+    maxAtomic = BigInt(rawMax)
+  } else {
+    throw new Error(
+      `X402_MAX_PAYMENT_ATOMIC_USDC must be a whole number of atomic USDC units ` +
+        `(6 decimals — e.g. 100000 = $0.10); got "${rawMax}"`
+    )
+  }
 
   // Inner fetch enforces the spend cap: it sees the 402 before
   // wrapFetchWithPayment signs anything, and throws if the server asks for

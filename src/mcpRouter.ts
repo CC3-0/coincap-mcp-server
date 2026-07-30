@@ -36,8 +36,10 @@ async function executeToolRequest (def: EndpointDef, args: any) {
   if (!apiKey && def.method === 'get') {
     // Keyless path: the 10 /agentFriendly endpoints accept per-call USDC
     // payment via x402 when the server is configured with a wallet key.
-    const paidFetch = getPaidFetch()
-    if (paidFetch && def.path.startsWith('/agentFriendly')) {
+    // Path check first — non-agentFriendly tools error out below without
+    // ever loading the x402/viem stack.
+    const paidFetch = def.path.startsWith('/agentFriendly') ? getPaidFetch() : null
+    if (paidFetch) {
       const res = await paidFetch(
         `${fullUrl}${sep}mcpServerVersion=${mcpServerVersion}`
       )

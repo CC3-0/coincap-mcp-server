@@ -22,7 +22,8 @@
         "${__dirname}/dist/index.js"
       ],
       "env": {
-        "COINCAP_API_KEY": "${user_config.COINCAP_API_KEY}"
+        "COINCAP_API_KEY": "${user_config.COINCAP_API_KEY}",
+        "X402_PRIVATE_KEY": "${user_config.X402_PRIVATE_KEY}"
       }
     }
   },
