@@ -2,8 +2,8 @@
   "dxt_version": "0.1",
   "name": "CoinCap Market Data MCP",
   "version": "1.0.0",
-  "description": "Add real‑time cryptocurrency data to your workflows with the CoinCap MCP Server. This lightweight Node‑based tool dynamically loads every CoinCap.io endpoint to bring you live prices, market caps and technical indicators in a single package. Built for Claude Desktop and other MCP clients, it runs via stdio or HTTP and works seamlessly across macOS, Windows and Linux.",
-  "long_description": "The CoinCap MCP Server turns the trusted CoinCap API into a catalog of ready‑to‑use tools for your AI or automation environment. When launched, it reads CoinCap’s Swagger specification and auto‑generates tools for every endpoint with no manual coding required. Use the JSON‑RPC “tools/list” command to discover what’s available, then call any endpoint to retrieve crypto‑asset listings, price history, circulating supply or exchange‑specific market data. For deeper analysis, it also exposes technical indicators such as RSI, SMA, EMA, MACD, VWAP and candlestick patterns, along with currency conversion rates and exchange listings.\n\nDesigned with flexibility in mind, the server supports both stdio transport for Claude Desktop and a streamable HTTP mode for remote clients. A simple environment variable holds your CoinCap API key, and the same build runs on darwin, win32 and linux. Whether you’re building a chatbot that answers crypto questions or a dashboard that visualizes market trends, the CoinCap MCP Server delivers up‑to‑the‑minute data and technical analysis tools right out of the box.",
+  "description": "Add real\u2011time cryptocurrency data to your workflows with the CoinCap MCP Server. This lightweight Node\u2011based tool dynamically loads every CoinCap.io endpoint to bring you live prices, market caps and technical indicators in a single package. Built for Claude Desktop and other MCP clients, it runs via stdio or HTTP and works seamlessly across macOS, Windows and Linux.",
+  "long_description": "The CoinCap MCP Server turns the trusted CoinCap API into a catalog of ready\u2011to\u2011use tools for your AI or automation environment. When launched, it reads CoinCap\u2019s Swagger specification and auto\u2011generates tools for every endpoint with no manual coding required. Use the JSON\u2011RPC \u201ctools/list\u201d command to discover what\u2019s available, then call any endpoint to retrieve crypto\u2011asset listings, price history, circulating supply or exchange\u2011specific market data. For deeper analysis, it also exposes technical indicators such as RSI, SMA, EMA, MACD, VWAP and candlestick patterns, along with currency conversion rates and exchange listings.\n\nDesigned with flexibility in mind, the server supports both stdio transport for Claude Desktop and a streamable HTTP mode for remote clients. A simple environment variable holds your CoinCap API key, and the same build runs on darwin, win32 and linux. Whether you\u2019re building a chatbot that answers crypto questions or a dashboard that visualizes market trends, the CoinCap MCP Server delivers up\u2011to\u2011the\u2011minute data and technical analysis tools right out of the box.",
   "author": {
     "name": "CoinCap",
     "email": "justin.coincap@gmail.com",
@@ -38,8 +38,8 @@
     "COINCAP_API_KEY": {
       "type": "string",
       "title": "CoinCap API Key",
-      "description": "Your CoinCap.io API key for accessing cryptocurrency data",
-      "required": true,
+      "description": "Your CoinCap.io API key. Optional if you configure an x402 wallet key instead.",
+      "required": false,
       "sensitive": true
     },
     "NODE_PATH": {
@@ -48,6 +48,13 @@
       "description": "Path to Node Executable (modify if default doesn't work)",
       "required": true,
       "default": "node"
+    },
+    "X402_PRIVATE_KEY": {
+      "type": "string",
+      "title": "x402 Wallet Private Key (optional)",
+      "description": "EVM private key for a wallet holding USDC on Base. Enables keyless pay-per-call access to the agentFriendly tools via the x402 protocol ($0.002-$0.01 per call). Use a dedicated low-balance wallet.",
+      "required": false,
+      "sensitive": true
     }
   },
   "keywords": [

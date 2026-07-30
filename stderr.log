@@ -1,0 +1,21 @@
+[MCP] Swagger parsed, 38 tools loaded.
+[MCP] Tool price_byaddress has enum params: network: [ethereum,base,arbitrum,optimism,polygon,xdai,fantom,bsc,avalanche,solana]
+[MCP] Tool ta_slug_sma has enum params: fetchInterval: [m1,m5,m15,m30,h1,h2,h6,h12,d1], includeOriginal: [true,false]
+[MCP] Tool ta_slug_sma_latest has enum params: fetchInterval: [m1,m5,m15,m30,h1,h2,h6,h12,d1], includeOriginal: [true,false]
+[MCP] Tool ta_slug_ema has enum params: fetchInterval: [m1,m5,m15,m30,h1,h2,h6,h12,d1], includeOriginal: [true,false]
+[MCP] Tool ta_slug_ema_latest has enum params: fetchInterval: [m1,m5,m15,m30,h1,h2,h6,h12,d1], includeOriginal: [true,false]
+[MCP] Tool ta_slug_macd has enum params: fetchInterval: [m1,m5,m15,m30,h1,h2,h6,h12,d1], includeOriginal: [true,false]
+[MCP] Tool ta_slug_macd_latest has enum params: fetchInterval: [m1,m5,m15,m30,h1,h2,h6,h12,d1], includeOriginal: [true,false]
+[MCP] Tool ta_slug_candlesticks has enum params: interval: [m1,m5,m15,m30,h1,h2,h6,h12,d1]
+[MCP] Tool ta_slug_rsi has enum params: smoothing: [EMA,SMA,WMA], fetchInterval: [m1,m5,m15,m30,h1,h2,h6,h12,d1], includeOriginal: [true,false]
+[MCP] Tool ta_slug_rsi_latest has enum params: smoothing: [EMA,SMA,WMA], fetchInterval: [m1,m5,m15,m30,h1,h2,h6,h12,d1], includeOriginal: [true,false]
+[MCP] Tool agentFriendly_assets_search has enum params: sortBy: [price,volume,marketCap,changePercent24Hr], sortOrder: [asc,desc]
+[MCP] Tool agentFriendly_ta_slug_sma has enum params: fetchInterval: [m1,m5,m15,m30,h1,h2,h6,h12,d1]
+[MCP] Tool agentFriendly_ta_slug_ema has enum params: fetchInterval: [m1,m5,m15,m30,h1,h2,h6,h12,d1]
+[MCP] Tool agentFriendly_ta_slug_rsi has enum params: fetchInterval: [m1,m5,m15,m30,h1,h2,h6,h12,d1]
+[MCP] Tool agentFriendly_ta_slug_macd has enum params: fetchInterval: [m1,m5,m15,m30,h1,h2,h6,h12,d1]
+🚀 MCP server ready via stdio
+[MCP] Tool call: agentFriendly_full_assets_by_slug
+[MCP] Args: {
+  "slugs": "bitcoin"
+}

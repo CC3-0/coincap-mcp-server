@@ -12,7 +12,9 @@ A Model Context Protocol (MCP) server that exposes the CoinCap.io api as tools. 
 
 - Node.js ≥ 18
 - Yarn package manager
-- A CoinCap API key (get one free at https://pro.coincap.io)
+- Auth, either of:
+  - A CoinCap API key (get one free at https://pro.coincap.io), **or**
+  - An x402 wallet — an EVM private key holding USDC on Base — for keyless pay-per-call access to the `agentFriendly` tools (see [Keyless x402 payments](#keyless-x402-payments))
 
 ## Installation
 
@@ -44,6 +46,35 @@ yarn install
 # Build the project
 yarn build
 ```
+
+## Keyless x402 payments
+
+The 10 `agentFriendly` tools can be used **without a CoinCap account**: set
+`X402_PRIVATE_KEY` to an EVM private key whose wallet holds USDC on Base, and
+the server pays per call ($0.002–$0.01 USDC) via the
+[x402 protocol](https://x402.gitbook.io/x402). Payment is signed off-chain
+(EIP-3009) — the wallet needs **no ETH for gas**, only USDC.
+
+```json
+{
+  "mcpServers": {
+    "crypto-prices": {
+      "command": "npx",
+      "args": ["coincap-mcp-server"],
+      "env": {
+        "X402_PRIVATE_KEY": "0x_your_wallet_private_key"
+      }
+    }
+  }
+}
+```
+
+Notes:
+
+- **Use a dedicated, low-balance wallet.** Fund it with a few dollars of USDC on Base — never reuse a wallet holding significant funds.
+- Per-call spend is capped at 100000 atomic USDC ($0.10) regardless of what a server asks for; override with `X402_MAX_PAYMENT_ATOMIC_USDC`.
+- If both `COINCAP_API_KEY` and `X402_PRIVATE_KEY` are set, the API key is used (no payment is made).
+- Non-`agentFriendly` tools always require an API key.
 
 ## Usage
 

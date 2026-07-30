@@ -5,8 +5,9 @@ import {
   API_BASE
 } from './dynamicMcpTools.js'
 import axios from 'axios'
+import { getPaidFetch } from './x402Payment.js'
 
-const mcpServerVersion = '1.0.8' // match package.json version
+const mcpServerVersion = '1.0.9' // match package.json version
 
 import type { EndpointDef } from './dynamicMcpTools.js'
 
@@ -30,9 +31,31 @@ async function executeToolRequest (def: EndpointDef, args: any) {
   const fullUrl = `${API_BASE}${url}${
     searchParams.toString() ? '?' + searchParams.toString() : ''
   }`
-
-  if (!apiKey && def.method === 'get') throw new Error('API key is required')
   const sep = fullUrl.includes('?') ? '&' : '?'
+
+  if (!apiKey && def.method === 'get') {
+    // Keyless path: the 10 /agentFriendly endpoints accept per-call USDC
+    // payment via x402 when the server is configured with a wallet key.
+    const paidFetch = getPaidFetch()
+    if (paidFetch && def.path.startsWith('/agentFriendly')) {
+      const res = await paidFetch(
+        `${fullUrl}${sep}mcpServerVersion=${mcpServerVersion}`
+      )
+      const text = await res.text()
+      if (!res.ok) {
+        throw new Error(`x402 paid request failed (HTTP ${res.status}): ${text.slice(0, 300)}`)
+      }
+      return {
+        content: [{ type: 'text', text: JSON.stringify(JSON.parse(text), null, 2) }]
+      }
+    }
+    throw new Error(
+      def.path.startsWith('/agentFriendly')
+        ? 'No API key provided. Pass apiKey, set COINCAP_API_KEY, or set X402_PRIVATE_KEY ' +
+          '(an EVM wallet key holding USDC on Base) to pay per call via x402 — no signup needed.'
+        : 'API key is required for this tool. (Only the agentFriendly tools support keyless x402 payment.)'
+    )
+  }
   const finalUrl = apiKey
     ? `${fullUrl}${sep}apiKey=${apiKey}&mcpServerVersion=${mcpServerVersion}`
     : `${fullUrl}${sep}mcpServerVersion=${mcpServerVersion}`
@@ -72,7 +95,9 @@ class MCPRouterService {
         const properties: Record<string, any> = {
           apiKey: {
             type: 'string',
-            description: 'CoinCap API key for authentication'
+            description:
+              'CoinCap API key for authentication. Optional for agentFriendly tools ' +
+              'when the server is configured with an x402 wallet (X402_PRIVATE_KEY).'
           }
         }
 
